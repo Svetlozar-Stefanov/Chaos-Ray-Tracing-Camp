@@ -40,7 +40,14 @@ ray gen_ray(int x, int y)
 
 int main()
 {
-    ofstream file("ray.ppm", std::ios::out | std::ios::binary);
+    vec3 v1(3, -3, 1);
+    vec3 v2(4, 9, 3);
+
+    vec3 t = cross(v1, v2);
+
+    std::cout << t.x() << t.y() << t.z() << '\n';
+
+    /*ofstream file("ray.ppm", std::ios::out | std::ios::binary);
     file << "P3\n";
     file << image_width << " " << image_height << "\n";
     file << max_color_comp << "\n";
@@ -62,5 +69,5 @@ int main()
         }
         file << "\n";
     }
-    file.close();
+    file.close();*/
 }

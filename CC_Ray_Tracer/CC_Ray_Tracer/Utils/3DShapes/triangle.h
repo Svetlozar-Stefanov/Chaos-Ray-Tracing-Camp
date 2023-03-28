@@ -19,12 +19,23 @@ public:
 		col = color;
 	}
 
-	virtual bool intersects(const ray& r) const
+	vec3 normal() const
 	{
 		vec3 e0 = vert[1] - vert[0];
 		vec3 e1 = vert[2] - vert[0];
 
 		vec3 plane_normal = cross(e0, e1);
+		return plane_normal;
+	}
+
+	float area() const
+	{
+		return normal().length() / 2;
+	}
+
+	virtual bool intersects(const ray& r) const
+	{
+		vec3 plane_normal = normal();
 		normalize(plane_normal);
 
 		bool intersects_plane = dot(plane_normal, r.Direction());
