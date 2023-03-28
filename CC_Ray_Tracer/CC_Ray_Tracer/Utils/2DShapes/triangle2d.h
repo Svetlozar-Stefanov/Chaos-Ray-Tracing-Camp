@@ -7,10 +7,10 @@ float triangle_area(point2d a, point2d b, point2d c)
 	return abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2);
 }
 
-class triangle : public shape2d
+class triangle2d : public shape2d
 {
 public:
-	triangle(point2d a, point2d b, point2d c, point2d origin, color col)
+	triangle2d(point2d a, point2d b, point2d c, point2d origin, color col)
 		: shape2d(origin, col)
 	{
 		p[0] = a + origin;

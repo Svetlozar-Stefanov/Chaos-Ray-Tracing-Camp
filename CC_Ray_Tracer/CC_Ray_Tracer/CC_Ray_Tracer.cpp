@@ -3,9 +3,7 @@
 #include <fstream>
 
 #include "Utils/color.h"
-#include "Utils/Shapes/rectangle.h"
-#include "Utils/Shapes/triangle.h"
-#include "Utils/Shapes/circle.h"
+#include "Utils/ray.h"
 
 using std::vector;
 using std::ofstream;
@@ -13,159 +11,54 @@ using std::ofstream;
 //Image
 const int image_width = 1280;
 const int image_height = 720;
+const int aspect_ratio = 16 / 9;
+
 
 const int max_color_comp = 255;
+    
+//Camera
+vec3 origin(0, 0, 0);
 
-//Scene
-vector<shape2d*> shapes;
-
-//Task01
-void random_rectangles(int r, int c)
+ray gen_ray(int x, int y)
 {
-    int rec_w = image_width / r;
-    int rec_h = image_height / c;
+    float p_x = x + 0.5;
+    float p_y = y + 0.5;
 
-    vector<vector<color>> color_map(r);
-    for (int i = 0; i < r; i++)
-    {
-        for (int j = 0; j < c; j++)
-        {
-            color_map[i].push_back(rand_solid_color());
-            while (i > 0 && j > 0 && 
-                (color_map[i - 1][j] == color_map[i][j] ||
-                color_map[i][j-1] == color_map[i][j]))
-            {
-                color_map[i][j] = rand_solid_color();
-            }
-            while (i > 0 && color_map[i-1][j] == color_map[i][j])
-            {
-                color_map[i][j] = rand_solid_color();
-            }
-            while (j > 0 && color_map[i][j-1] == color_map[i][j])
-            {
-                color_map[i][j] = rand_solid_color();
-            }
-        }
-    }
+    p_x /= (float)image_width;
+    p_y /= (float)image_height;
 
-    ofstream file("img_01.ppm", std::ios::out | std::ios::binary);
-    file << "P3\n";
-    file << image_width << " " << image_height << "\n";
-    file << max_color_comp << "\n";
-    for (int i = 0; i < image_height; i++)
-    {
-        int ci = clamp(0, i / rec_h, r - 1);
-        for (int j = 0; j < image_width; j++)
-        {
-            int cj = clamp(0, j/rec_w, c - 1);
-            
-            color c = color_map[ci][cj];
-            file << max_color_comp * c.x() << "\t" << max_color_comp * c.y() << "\t" << max_color_comp * c.z() << "\n";
-        }
-        file << "\n";
-    }
-    file.close();
-}
+    p_x = (2.0 * p_x) - 1;
+    p_y = 1 - (2.0 * p_y);
 
-//Task02
-void load_house()
-{
-    rectangle* grass = new rectangle(
-        point2d(0.0, 0.0),
-        point2d(image_width, -200.0),
-        point2d(0.0, image_height),
-        color(0.0, 0.5, 0.0));
-    shapes.push_back(grass);
+    p_x *= (float)image_width * aspect_ratio / image_height;
 
-    rectangle* walls = new rectangle(
-        point2d(-300, 0.0),
-        point2d(300.0, -400.0),
-        point2d(image_width / 2, image_height-50),
-        color(0.9, 0.4, 0.0));
-    shapes.push_back(walls);
+    vec3 ray_dir(p_x, p_y, -1);
+    normalize(ray_dir);
 
-    rectangle* window1 = new rectangle(
-        point2d(0, -50),
-        point2d(100, 50),
-        point2d(image_width / 2 + 100, image_height - 250),
-        color(0.0, 0.8, 0.8));
-    shapes.push_back(window1);
-
-    rectangle* window2 = new rectangle(
-        point2d(0, -50),
-        point2d(-100, 50),
-        point2d(image_width / 2 - 100, image_height - 250),
-        color(0.0, 0.8, 0.8));
-    shapes.push_back(window2);
-
-    rectangle* door = new rectangle(
-        point2d(-50.0, 0.0),
-        point2d(50.0, -250.0),
-        point2d(image_width / 2, image_height-50),
-        color(0.8, 0.3, 0.0));
-        shapes.push_back(door);
-
-    triangle* roof = new triangle(
-        point2d(-400.0, 0.0),
-        point2d(0.0, -300),
-        point2d(400.0, 0),
-        point2d(image_width / 2, image_height-400),
-        color(0.9, 0.0, 0.0));
-    shapes.push_back(roof);
-
-    circle* sun = new circle(200.0, point2d(20, 20), color(1, 1, 0));
-    shapes.push_back(sun);
-
-    circle* mouth = new circle(80.0, point2d(60, 70), color(0, 0, 0));
-    shapes.push_back(mouth);
-
-    circle* mask = new circle(85.0, point2d(60, 55), color(1, 1, 0));
-    shapes.push_back(mask);
-
-    circle* eye1 = new circle(20.0, point2d(50, 50), color(0, 0, 0));
-    shapes.push_back(eye1);
-    circle* eye2 = new circle(20.0, point2d(110, 50), color(0, 0, 0));
-    shapes.push_back(eye2);
-
-    rectangle* frame = new rectangle(
-        point2d(-52.0, 0.0),
-        point2d(52.0, -10.0),
-        point2d(80, 41),
-        color(0.0, 0.0, 0.0));
-    shapes.push_back(frame);
-
+    return ray(origin, ray_dir);
 }
 
 int main()
 {
-    random_rectangles(16, 16);
-
-    load_house();
-
-    ofstream file("img_02.ppm", std::ios::out | std::ios::binary);
+    ofstream file("ray.ppm", std::ios::out | std::ios::binary);
     file << "P3\n";
     file << image_width << " " << image_height << "\n";
     file << max_color_comp << "\n";
-    for (int i = 0; i < image_height; i++)
+    for (int y = 0; y < image_height; y++)
     {
-        for (int j = 0; j < image_width; j++)
+        for (int x = 0; x < image_width; x++)
         {
             color c;
-            bool hit = false;
-            for(int s = 0; s < shapes.size(); s++)
-            {
-                if (shapes[s]->contains(point2d(j, i)))
-                {
-                    hit = true;
-                    c = shapes[s]->c;
-                }
-            }
 
-            if (!hit)
-            {
-                c = color(0.85, 1, 1);
-            }
-            file << max_color_comp * c.x() << "\t" << max_color_comp * c.y() << "\t" << max_color_comp * c.z() << "\n";
+            ray ray = gen_ray(x, y);
+
+            c = ray.Direction();
+
+
+            
+            file << (int)(max_color_comp * abs(c.x())) << " " 
+                << (int)(max_color_comp * abs(c.y())) << " " 
+                << (int)(max_color_comp * -c.z()) << "\t";
         }
         file << "\n";
     }

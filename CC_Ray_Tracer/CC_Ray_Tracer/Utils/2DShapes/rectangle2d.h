@@ -6,7 +6,7 @@
 using std::max;
 using std::min;
 
-class rectangle : public shape2d
+class rectangle2d : public shape2d
 {
 public:
 	rectangle(point2d a, point2d b, point2d origin, color col)

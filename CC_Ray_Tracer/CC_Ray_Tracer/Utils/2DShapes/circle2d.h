@@ -2,10 +2,10 @@
 #include "shape2d.h"
 #include "../color.h"
 
-class circle : public shape2d
+class circle2d : public shape2d
 {
 public:
-	circle(float radius, point2d origin, color col)
+	circle2d(float radius, point2d origin, color col)
 		: shape2d(origin, col)
 	{
 		r = radius;
