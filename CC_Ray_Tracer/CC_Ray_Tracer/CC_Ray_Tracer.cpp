@@ -4,6 +4,8 @@
 
 #include "Utils/color.h"
 #include "Utils/ray.h"
+#include "Utils/3DShapes/shape.h"
+#include "Utils/3DShapes/triangle.h"
 
 using std::vector;
 using std::ofstream;
@@ -38,36 +40,88 @@ ray gen_ray(int x, int y)
     return ray(origin, ray_dir);
 }
 
+//Scene
+vector<shape*> scene_actors;
+
+
+
 int main()
 {
-    vec3 v1(3, -3, 1);
-    vec3 v2(4, 9, 3);
+    //Materials
+    Material red;
+    red.material_color = color(0.8, 0.0, 0.0);
+    Material green;
+    green.material_color = color(0.0, 0.8, 0.0);
+    Material blue;
+    blue.material_color = color(0.0, 0.0, 0.8);
+    Material rnd;
+    rnd.material_color = rand_color();
 
-    vec3 t = cross(v1, v2);
 
-    std::cout << t.x() << t.y() << t.z() << '\n';
+    vec3 top(0, 2, -3);
+    vec3 left(0.2, 0, -1);
+    vec3 right(2, 0, -2);
+    vec3 back(-2, -0.3, -4);
 
-    /*ofstream file("ray.ppm", std::ios::out | std::ios::binary);
+
+    scene_actors.push_back(new triangle(
+        top, left, right, green));
+
+    scene_actors.push_back(new triangle(
+        top, right, back , blue));
+
+    scene_actors.push_back(new triangle(
+        top, back, left, red));
+
+    scene_actors.push_back(new triangle(
+        right, left, back, blue));
+
+    ofstream file("ray.ppm", std::ios::out | std::ios::binary);
     file << "P3\n";
     file << image_width << " " << image_height << "\n";
     file << max_color_comp << "\n";
-    for (int y = 0; y < image_height; y++)
+    for (int y = 0; y < image_height; ++y)
     {
-        for (int x = 0; x < image_width; x++)
+        for (int x = 0; x < image_width; ++x)
         {
-            color c;
+            color pixel_col;
 
             ray ray = gen_ray(x, y);
+            Intersection intersection;
+            bool hit = false;
 
-            c = ray.Direction();
+            for (int i = scene_actors.size() - 1; i >= 0; i--)
+            {
+                if (scene_actors[i]->intersects(ray, intersection))
+                {
+                    hit = true;
+                }
+            }
 
+            /*for (auto actor : scene_actors)
+            {
+                if (actor->intersects(ray, intersection))
+                {
+                    hit = true;
+                }
+            }*/
+
+
+            if (hit)
+            {
+                pixel_col = intersection.material.material_color;
+            }
+            else
+            {
+                pixel_col = color(0.35, 0.8, 0.95);
+            }
 
             
-            file << (int)(max_color_comp * abs(c.x())) << " " 
-                << (int)(max_color_comp * abs(c.y())) << " " 
-                << (int)(max_color_comp * -c.z()) << "\t";
+            file << (int)(max_color_comp * pixel_col.x()) << " "
+                << (int)(max_color_comp * pixel_col.y()) << " "
+                << (int)(max_color_comp * pixel_col.z()) << "\t";
         }
         file << "\n";
     }
-    file.close();*/
+    file.close();
 }

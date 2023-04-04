@@ -3,5 +3,5 @@
 
 class shape {
 public:
-	virtual bool intersects(const ray& r) const = 0;
+	virtual bool intersects(const ray& r, Intersection& intersection) const = 0;
 };
