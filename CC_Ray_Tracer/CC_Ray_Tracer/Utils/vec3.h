@@ -80,19 +80,19 @@ public:
 		return *this;
 	}
 
-	vec3& operator+=(const vec3& o)
+	vec3& operator+=(const vec3& other)
 	{
-		v[0] += o.v[0];
-		v[1] += o.v[1];
-		v[2] += o.v[2];
+		v[0] += other.v[0];
+		v[1] += other.v[1];
+		v[2] += other.v[2];
 		return *this;
 	}
 
-	vec3& operator-=(const vec3& o)
+	vec3& operator-=(const vec3& other)
 	{
-		v[0] -= o.v[0];
-		v[1] -= o.v[1];
-		v[2] -= o.v[2];
+		v[0] -= other.v[0];
+		v[1] -= other.v[1];
+		v[2] -= other.v[2];
 		return *this;
 	}
 
@@ -136,16 +136,16 @@ vec3 operator-(vec3 v, float n)
 	return v;
 }
 
-vec3 operator+(vec3 v, const vec3& o)
+vec3 operator+(vec3 v1, const vec3& v2)
 {
-	v += o;
-	return v;
+	v1 += v2;
+	return v1;
 }
 
-vec3 operator-(vec3 v, const vec3& o)
+vec3 operator-(vec3 v1, const vec3& v2)
 {
-	v -= o;
-	return v;
+	v1 -= v2;
+	return v1;
 }
 
 void normalize(vec3& v)
