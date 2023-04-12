@@ -1,20 +1,20 @@
 #pragma once
-#include "../vec3.h"
+#include "../Vector3.h"
 
-struct point2d
+struct Point2d
 {
-	point2d()
+	Point2d()
 	{
 		x = y = 0;
 	}
 
-	point2d(float x, float y)
+	Point2d(float x, float y)
 	{
 		this->x = x;
 		this->y = y;
 	}
 
-	point2d(const point2d& o)
+	Point2d(const Point2d& o)
 	{
 		x = o.x;
 		y = o.y;
@@ -24,23 +24,23 @@ struct point2d
 	float y;
 };
 
-point2d operator+(point2d c, const point2d& o)
+Point2d operator+(Point2d c, const Point2d& o)
 {
 	c.x += o.x;
 	c.y += o.y;
 	return c;
 }
 
-class shape2d
+class Shape2d
 {
 public:
-	shape2d(point2d origin, color col)
+	Shape2d(Point2d origin, Color col)
 	{
 		o = origin;
 		c = col;
 	}
-	color c;
+	Color c;
 
-	virtual bool contains(point2d p) const = 0;
-	point2d o;
+	virtual bool contains(Point2d p) const = 0;
+	Point2d o;
 };

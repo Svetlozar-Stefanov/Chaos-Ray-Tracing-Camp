@@ -1,7 +1,7 @@
 #pragma once
-#include "color.h"
+#include "Color.h"
 
 struct Material
 {
-	color material_color;
+	Color materialColor;
 };

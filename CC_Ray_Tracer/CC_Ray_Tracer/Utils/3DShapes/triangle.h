@@ -1,59 +1,62 @@
 #pragma once
-#include "shape.h"
-#include "../color.h"
+#include "Shape.h"
+#include "../Color.h"
 
-class triangle 
-	: public shape {
+class Triangle 
+	: public Shape {
 
 private:
-	vec3 vert[3];
-	Material t_material;
+	Vector3 vert[3];
+	Material mMaterial;
 		
 public:
-	triangle(vec3 a, vec3 b, vec3 c, Material material)
+	Triangle(Vector3 a, Vector3 b, Vector3 c, Material material)
 	{
 		vert[0] = a;
 		vert[1] = b;
 		vert[2] = c;
 
-		t_material = material;
+		mMaterial = material;
 	}
 
-	vec3 normal() const
+	Vector3 getNormal() const
 	{
-		vec3 e0 = vert[1] - vert[0];
-		vec3 e1 = vert[2] - vert[0];
+		Vector3 e0 = vert[1] - vert[0];
+		Vector3 e1 = vert[2] - vert[0];
 
-		vec3 plane_normal = cross(e0, e1);
-		normalize(plane_normal);
-		return plane_normal;
+		Vector3 planeNormal = cross(e0, e1);
+		normalize(planeNormal);
+		return planeNormal;
 	}
 
-	float area() const
+	float getArea() const
 	{
-		vec3 e0 = vert[1] - vert[0];
-		vec3 e1 = vert[2] - vert[0];
+		Vector3 e0 = vert[1] - vert[0];
+		Vector3 e1 = vert[2] - vert[0];
 
-		vec3 plane_normal = cross(e0, e1);
-		return plane_normal.length() / 2;
+		Vector3 planeNormal = cross(e0, e1);
+		return planeNormal.getLength() / 2;
 	}
 
-	virtual bool intersects(const ray& r, Intersection& intersection) const
+	virtual bool intersects(const Ray& r, Intersection& intersection) const
 	{
-		vec3 plane_normal = normal();
+		Vector3 planeNormal = getNormal();
 
-		bool intersects_plane = dot(plane_normal, r.Direction()) < 0.0f;
-
-		float rp_dist = dot(plane_normal, vert[0]);
-		float r_proj = dot(r.Direction(), plane_normal);
-		float t = rp_dist / r_proj;
-		vec3 p = r.getPoint(t);
-
-		if (dot(plane_normal, cross(vert[1] - vert[0], p - vert[0])) > 0
-			&& dot(plane_normal, cross(vert[2] - vert[1], p - vert[1])) > 0
-			&& dot(plane_normal, cross(vert[0] - vert[2], p - vert[2])) > 0)
+		if (dot(planeNormal, r.getDirection()) > 0.0f)
 		{
-			intersection.update(t, t_material);
+			return false;
+		}
+
+		float rpDist = dot(planeNormal, vert[0]);
+		float rProj = dot(r.getDirection(), planeNormal);
+		float t = rpDist / rProj;
+		Vector3 p = r.getPoint(t);
+
+		if (dot(planeNormal, cross(vert[1] - vert[0], p - vert[0])) > 0
+			&& dot(planeNormal, cross(vert[2] - vert[1], p - vert[1])) > 0
+			&& dot(planeNormal, cross(vert[0] - vert[2], p - vert[2])) > 0)
+		{
+			intersection.update(t, mMaterial);
 			return true;
 		}
 

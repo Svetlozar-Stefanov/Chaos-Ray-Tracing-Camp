@@ -1,7 +1,7 @@
 #pragma once
-#include "../ray.h"
+#include "../Ray.h"
 
-class shape {
+class Shape {
 public:
-	virtual bool intersects(const ray& r, Intersection& intersection) const = 0;
+	virtual bool intersects(const Ray& r, Intersection& intersection) const = 0;
 };

@@ -1,17 +1,17 @@
 #pragma once
-#include "shape2d.h"
-#include "../color.h"
+#include "Shape2d.h"
+#include "../Color.h"
 
-class circle2d : public shape2d
+class Circle2d : public Shape2d
 {
 public:
-	circle2d(float radius, point2d origin, color col)
-		: shape2d(origin, col)
+	Circle2d(float radius, Point2d origin, Color col)
+		: Shape2d(origin, col)
 	{
 		r = radius;
 	}
 
-	bool contains(point2d pnt) const override
+	bool contains(Point2d pnt) const override
 	{
 		return (pnt.x - o.x) * (pnt.x - o.x) + (pnt.y - o.y) * (pnt.y - o.y) <= r*r;
 	}

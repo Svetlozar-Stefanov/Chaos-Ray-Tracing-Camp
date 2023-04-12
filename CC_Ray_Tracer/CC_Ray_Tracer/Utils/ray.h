@@ -1,6 +1,6 @@
 #pragma once
 #include <limits>
-#include "vec3.h"
+#include "Vector3.h"
 #include "Material.h"
 
 struct Intersection
@@ -23,28 +23,28 @@ struct Intersection
 	}
 };
 
-class ray
+class Ray
 {
-	vec3 ogin;
-	vec3 dir;
+	Vector3 mOrigin;
+	Vector3 mDirection;
 
 public:
-	ray(vec3 origin, vec3 direction) {
-		ogin = origin;
-		dir = direction;
+	Ray(Vector3 origin, Vector3 direction) {
+		mOrigin = origin;
+		mDirection = direction;
 	}
 
-	vec3 Origin() const
+	Vector3 getOrigin() const
 	{
-		return ogin;
+		return mOrigin;
 	}
 	
-	vec3 Direction() const {
-		return dir;
+	Vector3 getDirection() const {
+		return mDirection;
 	}
 
-	vec3 getPoint(float t) const
+	Vector3 getPoint(float t) const
 	{
-		return ogin + dir * t;
+		return mOrigin + mDirection * t;
 	}
 };

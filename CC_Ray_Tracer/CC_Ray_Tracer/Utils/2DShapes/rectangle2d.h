@@ -1,27 +1,28 @@
-#pragma once
+ #pragma once
 #include <cmath>
 
-#include "shape2d.h"
+#include "Shape2d.h"
+#include "../Color.h"
 
 using std::max;
 using std::min;
 
-class rectangle2d : public shape2d
+class Rectangle2d : public Shape2d
 {
 public:
-	rectangle(point2d a, point2d b, point2d origin, color col)
-		: shape2d(origin, col)
+	Rectangle2d(Point2d a, Point2d b, Point2d origin, Color col)
+		: Shape2d(origin, col)
 	{
 		s[0] = a + origin;
 		s[1] = b + origin;
 	}
 
-	bool contains(point2d p) const override
+	bool contains(Point2d p) const override
 	{
 		return min(s[0].x, s[1].x) <= p.x && p.x <= max(s[0].x, s[1].x)
 			&& min(s[0].y, s[1].y) <= p.y && p.y <= max(s[0].y, s[1].y);
 	}
 
 private:
-	point2d s[2];
+	Point2d s[2];
 };

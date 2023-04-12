@@ -1,17 +1,17 @@
 #pragma once
 #include <stdlib.h>
 
-class vec3
+class Vector3
 {
 public:
-	vec3()
+	Vector3()
 	{
 		v[0] = 0;
 		v[1] = 0;
 		v[2] = 0;
 	}
 
-	vec3(float x, float y, float z)
+	Vector3(float x, float y, float z)
 	{
 		v[0] = x;
 		v[1] = y;
@@ -43,12 +43,12 @@ public:
 		return v[2];
 	}
 
-	bool operator==(const vec3& other)
+	bool operator==(const Vector3& other)
 	{
 		return x() == other.x() && y() == other.y() && z() == other.z();
 	}
 
-	vec3& operator*=(float n)
+	Vector3& operator*=(float n)
 	{
 		v[0] *= n;
 		v[1] *= n;
@@ -56,7 +56,7 @@ public:
 		return *this;
 	}
 
-	vec3& operator/=(float n)
+	Vector3& operator/=(float n)
 	{
 		v[0] /= n;
 		v[1] /= n;
@@ -64,7 +64,7 @@ public:
 		return *this;
 	}
 
-	vec3& operator+=(float n)
+	Vector3& operator+=(float n)
 	{
 		v[0] += n;
 		v[1] += n;
@@ -72,7 +72,7 @@ public:
 		return *this;
 	}
 
-	vec3& operator-=(float n)
+	Vector3& operator-=(float n)
 	{
 		v[0] -= n;
 		v[1] -= n;
@@ -80,7 +80,7 @@ public:
 		return *this;
 	}
 
-	vec3& operator+=(const vec3& other)
+	Vector3& operator+=(const Vector3& other)
 	{
 		v[0] += other.v[0];
 		v[1] += other.v[1];
@@ -88,7 +88,7 @@ public:
 		return *this;
 	}
 
-	vec3& operator-=(const vec3& other)
+	Vector3& operator-=(const Vector3& other)
 	{
 		v[0] -= other.v[0];
 		v[1] -= other.v[1];
@@ -96,73 +96,73 @@ public:
 		return *this;
 	}
 
-	float length() const
+	float getLength() const
 	{
 		return sqrt(x() * x() + y() * y() + z() * z());
 	}
 
-	vec3 normalized() const
+	Vector3 getNormalized() const
 	{ 
-		return vec3(v[0] / this->length(),
-			v[1] / this->length(),
-			v[2] / this->length());
+		return Vector3(v[0] / this->getLength(),
+			v[1] / this->getLength(),
+			v[2] / this->getLength());
 	}
 
 private:
 	float v[3];
 };
 
-vec3 operator*(vec3 v, float n)
+Vector3 operator*(Vector3 v, float n)
 {
 	v *= n;
 	return v;
 }
 
-vec3 operator/(vec3 v, float n)
+Vector3 operator/(Vector3 v, float n)
 {
 	v /= n;
 	return v;
 }
 
-vec3 operator+(vec3 v, float n)
+Vector3 operator+(Vector3 v, float n)
 {
 	v += n;
 	return v;
 }
 
-vec3 operator-(vec3 v, float n)
+Vector3 operator-(Vector3 v, float n)
 {
 	v -= n;
 	return v;
 }
 
-vec3 operator+(vec3 v1, const vec3& v2)
+Vector3 operator+(Vector3 v1, const Vector3& v2)
 {
 	v1 += v2;
 	return v1;
 }
 
-vec3 operator-(vec3 v1, const vec3& v2)
+Vector3 operator-(Vector3 v1, const Vector3& v2)
 {
 	v1 -= v2;
 	return v1;
 }
 
-void normalize(vec3& v)
+void normalize(Vector3& v)
 {
-	v /= v.length();
+	v /= v.getLength();
 }
 
-vec3 cross(const vec3& v1, const vec3& v2)
+Vector3 cross(const Vector3& v1, const Vector3& v2)
 {
-	return vec3(
+	return Vector3(
 		v1.y() * v2.z() - v1.z() * v2.y(),
 		v1.z() * v2.x() - v1.x() * v2.z(),
 		v1.x() * v2.y() - v1.y() * v2.x()
 	);
 }
 
-float dot(const vec3& v1, const vec3& v2) {
+float dot(const Vector3& v1, const Vector3& v2) {
 	return v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z();
 }
 
