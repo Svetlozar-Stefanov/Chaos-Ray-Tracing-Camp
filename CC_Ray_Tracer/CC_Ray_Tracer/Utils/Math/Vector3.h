@@ -1,5 +1,6 @@
 #pragma once
-#include <stdlib.h>
+#include <cmath>
+#include "Matrix.h"
 
 class Vector3
 {
@@ -96,9 +97,22 @@ public:
 		return *this;
 	}
 
+	Vector3& operator*=(const Matrix& matrix)
+	{
+		float x = v[0] * matrix.getValueAt(0, 0) + v[1] * matrix.getValueAt(1, 0) + v[2] * matrix.getValueAt(2, 0);
+		float y = v[0] * matrix.getValueAt(0, 1) + v[1] * matrix.getValueAt(1, 1) + v[2] * matrix.getValueAt(2, 1);
+		float z = v[0] * matrix.getValueAt(0, 2) + v[1] * matrix.getValueAt(1, 2) + v[2] * matrix.getValueAt(2, 2);
+
+		v[0] = x;
+		v[1] = y;
+		v[2] = z;
+
+		return *this;
+	}
+
 	float getLength() const
 	{
-		return sqrt(x() * x() + y() * y() + z() * z());
+		return std::sqrt(x() * x() + y() * y() + z() * z());
 	}
 
 	Vector3 getNormalized() const
@@ -112,48 +126,54 @@ private:
 	float v[3];
 };
 
-Vector3 operator*(Vector3 v, float n)
+inline Vector3 operator*(Vector3 v, float n)
 {
 	v *= n;
 	return v;
 }
 
-Vector3 operator/(Vector3 v, float n)
+inline Vector3 operator/(Vector3 v, float n)
 {
 	v /= n;
 	return v;
 }
 
-Vector3 operator+(Vector3 v, float n)
+inline Vector3 operator+(Vector3 v, float n)
 {
 	v += n;
 	return v;
 }
 
-Vector3 operator-(Vector3 v, float n)
+inline Vector3 operator-(Vector3 v, float n)
 {
 	v -= n;
 	return v;
 }
 
-Vector3 operator+(Vector3 v1, const Vector3& v2)
+inline Vector3 operator+(Vector3 v1, const Vector3& v2)
 {
 	v1 += v2;
 	return v1;
 }
 
-Vector3 operator-(Vector3 v1, const Vector3& v2)
+inline Vector3 operator-(Vector3 v1, const Vector3& v2)
 {
 	v1 -= v2;
 	return v1;
 }
 
-void normalize(Vector3& v)
+inline Vector3 operator*(Vector3 v, const Matrix& matrix)
+{
+	v *= matrix;
+	return v;
+}
+
+inline void normalize(Vector3& v)
 {
 	v /= v.getLength();
 }
 
-Vector3 cross(const Vector3& v1, const Vector3& v2)
+inline Vector3 cross(const Vector3& v1, const Vector3& v2)
 {
 	return Vector3(
 		v1.y() * v2.z() - v1.z() * v2.y(),
@@ -162,21 +182,21 @@ Vector3 cross(const Vector3& v1, const Vector3& v2)
 	);
 }
 
-float dot(const Vector3& v1, const Vector3& v2) {
+inline float dot(const Vector3& v1, const Vector3& v2) {
 	return v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z();
 }
 
 
-float rand_float() {
+inline float rand_float() {
 	return rand() / (RAND_MAX + 1.0f);
 }
 
-float rand_float(float min, float max)
+inline float rand_float(float min, float max)
 {
 	return min + (max - min) * rand_float();
 }
 
-int clamp(int min, int n, int max)
+inline int clamp(int min, int n, int max)
 {
 	if (n < min)
 	{

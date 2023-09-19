@@ -1,32 +1,46 @@
 #pragma once
 #include "Shape.h"
-#include "../Color.h"
+#include "../Math/UtilFunctions.h"
+#include "../Math/Constants.h"
+#include "../Math/Vector3.h"
+
+Vector3 calcPlaneNormal(Vector3 v0, Vector3 v1, Vector3 v2);
 
 class Triangle 
 	: public Shape {
 
 private:
 	Vector3 vert[3];
-	Material mMaterial;
+	Vector3 normals[3];
+	Vector3 mPlaneNormal;
 		
 public:
-	Triangle(Vector3 a, Vector3 b, Vector3 c, Material material)
+	Triangle(Vector3 a, Vector3 b, Vector3 c)
 	{
 		vert[0] = a;
 		vert[1] = b;
 		vert[2] = c;
+		mPlaneNormal = calcNormal();
+		normals[0] = mPlaneNormal;
+		normals[1] = mPlaneNormal;
+		normals[2] = mPlaneNormal;
+	}
 
-		mMaterial = material;
+	Triangle(Vector3 a, Vector3 b, Vector3 c,
+			Vector3 nA, Vector3 nB, Vector3 nC)
+	{
+		vert[0] = a;
+		vert[1] = b;
+		vert[2] = c;
+		mPlaneNormal = calcNormal();
+		normals[0] = nA;
+		normals[1] = nB;
+		normals[2] = nC;
 	}
 
 	Vector3 getNormal() const
 	{
-		Vector3 e0 = vert[1] - vert[0];
-		Vector3 e1 = vert[2] - vert[0];
-
-		Vector3 planeNormal = cross(e0, e1);
-		normalize(planeNormal);
-		return planeNormal;
+		return mPlaneNormal;
 	}
 
 	float getArea() const
@@ -38,28 +52,11 @@ public:
 		return planeNormal.getLength() / 2;
 	}
 
-	virtual bool intersects(const Ray& r, Intersection& intersection) const
+	virtual bool intersects(const Ray& r, Intersection& intersection) const override;
+
+private:
+	Vector3 calcNormal() const
 	{
-		Vector3 planeNormal = getNormal();
-
-		if (dot(planeNormal, r.getDirection()) > 0.0f)
-		{
-			return false;
-		}
-
-		float rpDist = dot(planeNormal, vert[0]);
-		float rProj = dot(r.getDirection(), planeNormal);
-		float t = rpDist / rProj;
-		Vector3 p = r.getPoint(t);
-
-		if (dot(planeNormal, cross(vert[1] - vert[0], p - vert[0])) > 0
-			&& dot(planeNormal, cross(vert[2] - vert[1], p - vert[1])) > 0
-			&& dot(planeNormal, cross(vert[0] - vert[2], p - vert[2])) > 0)
-		{
-			intersection.update(t, mMaterial);
-			return true;
-		}
-
-		return false;
+		return calcPlaneNormal(vert[0], vert[1], vert[2]);
 	}
 };

@@ -1,5 +1,5 @@
 #pragma once
-#include "../Ray.h"
+#include "../../SceneComponents/Ray.h"
 
 class Shape {
 public:
