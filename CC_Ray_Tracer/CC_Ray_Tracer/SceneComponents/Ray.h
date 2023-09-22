@@ -68,7 +68,8 @@ enum class RayType
 {
 	Camera,
 	Shadow,
-	Reflection
+	Reflection,
+	Refraction
 };
 
 class Ray

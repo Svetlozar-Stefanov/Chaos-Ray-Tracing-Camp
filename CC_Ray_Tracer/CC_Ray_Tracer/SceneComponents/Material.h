@@ -5,7 +5,9 @@
 enum class MaterialType
 {
 	Diffuse,
-	Reflective
+	Reflective,
+	Refractive,
+	Constant
 };
 
 class Material
@@ -13,14 +15,16 @@ class Material
 protected:
 	Color mAlbedo;
 	MaterialType mType;
+	float mIor;
 	bool mIsSmooth;
 
 	public:
-	Material(Color albedo, MaterialType type, bool isSmooth)
+	Material(Color albedo, MaterialType type, bool isSmooth, float ior = 1.0f)
 	{
 		mAlbedo = albedo;
 		mType = type;
 		mIsSmooth = isSmooth;
+		mIor = ior;
 	}
 
 	const Color& getAlbedo() const
@@ -36,5 +40,10 @@ protected:
 	bool isSmooth() const
 	{
 		return mIsSmooth;
+	}
+
+	float getIOR() const
+	{
+		return mIor;
 	}
 };

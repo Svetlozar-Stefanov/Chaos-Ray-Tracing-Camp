@@ -27,6 +27,7 @@ const char* MATERIALS_FIELD = "materials";
 const char* TYPE_FIELD = "type";
 const char* ALBEDO_FIELD = "albedo";
 const char* SHADING_FIELD = "smooth_shading";
+const char* IOR_FIELD = "ior";
 
 const char* OBJECTS_FIELD = "objects";
 const char* MATERIAL_INDEX_FIELD = "material_index";
@@ -95,23 +96,44 @@ void Scene::parseSceneFile(const string& fileName)
 		for (int i = 0; i < materialsArr.Size(); ++i)
 		{
 			const Value& typeVal = materialsArr[i].FindMember(TYPE_FIELD)->value;
-			assert(!typeVal.IsNull() && typeVal.IsString());
 
 			const Value& albedo = materialsArr[i].FindMember(ALBEDO_FIELD)->value;
-			assert(!albedo.IsNull() && albedo.IsArray());
 
 			const Value& shading = materialsArr[i].FindMember(SHADING_FIELD)->value;
-			assert(!shading.IsNull() && shading.IsBool());
+
+			const Value& iorVal = materialsArr[i].FindMember(IOR_FIELD)->value;
 
 			MaterialType type = MaterialType::Diffuse;
-			string typeString = typeVal.GetString();
-			if (typeString == "reflective")
+			if (!typeVal.IsNull() && typeVal.IsString())
 			{
-				type = MaterialType::Reflective;
+				string typeString = typeVal.GetString();
+				if (typeString == "reflective")
+				{
+					type = MaterialType::Reflective;
+				}
+				else if (typeString == "refractive")
+				{
+					type = MaterialType::Refractive;
+				}
+				else if (typeString == "constant")
+				{
+					type = MaterialType::Constant;
+				}
+			}
+			
+			Vector3 albed = Vector3(1,1,1);
+			if (!albedo.IsNull() && albedo.IsArray())
+			{
+				albed = loadVector(albedo.GetArray());
 			}
 
-			mMaterials.push_back(new Material(loadVector(albedo.GetArray()),
-										type, shading.GetBool()));
+			float ior = 1.0f;
+			if (!iorVal.IsNull() && iorVal.IsFloat())
+			{
+				ior = iorVal.GetFloat();
+			}
+
+			mMaterials.push_back(new Material(albed, type, shading.GetBool(), ior));
 		}
 	}
 
@@ -161,6 +183,12 @@ bool Scene::intersects(const Ray& ray, Intersection& intersection) const
 	bool hit = false;
 	for (const Mesh& mesh : mObjects)
 	{
+		if (ray.getType() == RayType::Shadow
+			&& mMaterials[mesh.getMaterialIndex()]->getType() == MaterialType::Refractive)
+		{
+			continue;
+		}
+
 		if (mesh.intersects(ray, intersection))
 		{
 			hit = true;

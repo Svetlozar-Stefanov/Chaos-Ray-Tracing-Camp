@@ -19,5 +19,6 @@ private:
 	Color shade(const Ray& ray, const Intersection& intersection, const Scene& scene) const;
 	Color diffuseShade(const Vector3& interPoint, const Intersection& intersection, const Scene& scene) const;
 	Color reflectiveShade(const Ray& ray, const Intersection& intersection, const Scene& scene) const;
+	Color refractiveShade(const Ray& ray, const Vector3& interPoint, const Intersection& intersection, const Scene& scene) const;
 };
 

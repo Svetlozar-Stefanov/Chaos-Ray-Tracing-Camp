@@ -8,7 +8,8 @@ using std::ofstream;
 
 const int MAX_COLOR_COMP = 256;
 const int COLOR_CHANNELS = 3;
-const float SHADOW_BIAS = 0.1;
+const float SHADOW_BIAS = 0.1f;
+const float REFRACTION_BIAS = 0.001f;
 const float MAX_DEPTH = 5;
 
 void Renderer::renderToPPM(const Scene& scene, const string& fileName)
@@ -149,11 +150,19 @@ Color Renderer::shade(const Ray& ray, const Intersection& intersection, const Sc
 
     if (material->getType() == MaterialType::Diffuse)
     {
-        pixelColor += diffuseShade(hitPoint, intersection, scene);
+        pixelColor = diffuseShade(hitPoint, intersection, scene);
     }
     else if (material->getType() == MaterialType::Reflective)
     {
-        pixelColor += reflectiveShade(ray, intersection, scene);
+        pixelColor = reflectiveShade(ray, intersection, scene);
+    }
+    else if (material->getType() == MaterialType::Refractive)
+    {
+        pixelColor = refractiveShade(ray, hitPoint, intersection, scene);
+    }
+    else if (material->getType() == MaterialType::Constant)
+    {
+        pixelColor = material->getAlbedo();
     }
 
     return pixelColor;
@@ -214,4 +223,59 @@ Color Renderer::reflectiveShade(const Ray& ray, const Intersection& intersection
         col.x() * material->getAlbedo().x(),
         col.y() * material->getAlbedo().y(),
         col.z() * material->getAlbedo().z());
+}
+
+Color Renderer::refractiveShade(const Ray& ray, const Vector3& interPoint, const Intersection& intersection, const Scene& scene) const
+{
+    const Material* material = intersection.getMaterial();
+    float ior1 = 1.0f;
+    float ior2 = material->getIOR();
+
+    Vector3 normal = intersection.getNormal();
+    if (material->isSmooth())
+    {
+        normal = intersection.getIntersectionNormal();
+    }
+
+    if (dot(ray.getDirection(), normal) > 0)
+    {
+        normal = normal * -1;
+        float temp = ior1;
+        ior1 = ior2;
+        ior2 = temp;
+    }
+
+    float cosAlpha = -dot(ray.getDirection(), normal);
+    float sinAlpha = sqrt(1.0f - (cosAlpha * cosAlpha));
+
+    Ray reflectionRay(interPoint + (normal * SHADOW_BIAS),
+        (ray.getDirection() - (normal * 2 * dot(ray.getDirection(), normal))),
+        RayType::Reflection, ray.getDepth() + 1);
+    Intersection tempRefl;
+
+    Color col;
+    if (sinAlpha < ior2 / ior1)
+    {
+        float sinBeta = (sinAlpha * ior1) / ior2;
+        float cosBeta = sqrt(1 - (sinBeta * sinBeta));
+
+        Vector3 C = (ray.getDirection() + normal * cosAlpha).getNormalized();
+        Vector3 B = C * sinBeta;
+        Vector3 A = normal * -cosBeta;
+        Vector3 R = A + B;
+
+        Ray refractionRay(interPoint + ((normal * -1) * REFRACTION_BIAS), R, RayType::Refraction, ray.getDepth() + 1);
+        Intersection tempRefr;
+        Color refractionColor = traceRay(refractionRay, tempRefr, scene);
+        Color reflectionColor = traceRay(reflectionRay, tempRefl, scene);
+
+        float fresnel = 0.5f * (1.0f - cosAlpha) * (1.0f - cosAlpha) * (1.0f - cosAlpha) * (1.0f - cosAlpha) * (1.0f - cosAlpha);
+        col = reflectionColor * fresnel + refractionColor * (1.0f - fresnel);
+    }
+    else
+    {
+        col = traceRay(reflectionRay, tempRefl, scene);
+    }
+
+    return col;
 }
