@@ -49,6 +49,14 @@ public:
 		mMaterial = material;
 	}
 
+	void update(float t)
+	{
+		if (mT > t)
+		{
+			mT = t;
+		}
+	}
+
 	void update(float t, const Material* material, Vector3 normal, Vector3 intersectionNormal)
 	{
 		mT = t;

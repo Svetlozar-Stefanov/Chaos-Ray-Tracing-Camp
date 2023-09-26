@@ -180,6 +180,7 @@ Document Scene::getJsonDocument(const string& fileName)
 bool Scene::intersects(const Ray& ray, Intersection& intersection) const
 {
 	float currentT = intersection.getT();
+	float boxT = INT_MAX;
 	bool hit = false;
 	for (const Mesh& mesh : mObjects)
 	{

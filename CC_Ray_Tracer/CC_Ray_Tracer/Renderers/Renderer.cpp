@@ -1,98 +1,73 @@
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "Renderer.h"
+#include <chrono>
+#include <thread>
 
-using std::string;
-using std::cout;
-using std::vector;
-using std::ofstream;
 
-const int MAX_COLOR_COMP = 256;
-const int COLOR_CHANNELS = 3;
-const float SHADOW_BIAS = 0.1f;
-const float REFRACTION_BIAS = 0.001f;
-const float MAX_DEPTH = 5;
+using std::chrono::high_resolution_clock;
+using std::chrono::microseconds;
+using std::chrono::duration_cast;
 
-void Renderer::renderToPPM(const Scene& scene, const string& fileName)
+using std::thread;
+
+stack<Bucket> buckets;
+mutex m;
+
+void Renderer::render(const Scene& scene, const std::string& fileName)
 {
     //Rendering
     std::cout << "Rendering: " << fileName << '\n';
-
-    ofstream file(fileName, std::ios::out | std::ios::binary);
-    file << "P3\n";
-
-    int width = scene.getWidth();
-    int height = scene.getHeight();
-
-    file << width << " " << height << "\n";
-    file << MAX_COLOR_COMP << "\n";
-    for (int y = 0; y < height; ++y)
-    {
-        cout << (int)(((float)y / height) * 100) << "%" << "\r";
-        for (int x = 0; x < width; ++x)
-        {
-            Color pixelColor(0,0,0);
-
-            pixelColor = colorAtPixel(x, y, scene);
-
-            file << (int)(MAX_COLOR_COMP * pixelColor.x()) << " "
-                << (int)(MAX_COLOR_COMP * pixelColor.y()) << " "
-                << (int)(MAX_COLOR_COMP * pixelColor.z()) << "\t";
-        }
-        file << "\n";
-    }
-    cout << fileName << " done.\n";
-    file.close();
-}
-
-void Renderer::renderToJPG(const Scene& scene, const string& fileName)
-{
-    //Rendering
-    std::cout << "Rendering: " << fileName << '\n';
+    high_resolution_clock::time_point start = high_resolution_clock::now();
 
     int width = scene.getWidth();
     int height = scene.getHeight();
 
     unsigned char* pixels = new unsigned char[width * height * COLOR_CHANNELS];
 
-    for (int y = 0; y < height; ++y)
+    const unsigned int threadCount = thread::hardware_concurrency();
+
+    buckets = generateBuckets(BUCKET_SIZE, width, height);
+    vector<thread> threads;
+
+    for (int i = 0; i < threadCount; i++)
     {
-        cout << (int)(((float)y / height) * 100) << "%" << "\r";
-        for (int x = 0; x < width; ++x)
-        {
-            Color pixelColor(0, 0, 0);
-
-            pixelColor = colorAtPixel(x, y, scene);
-
-            pixels[(y * width * COLOR_CHANNELS) + x * COLOR_CHANNELS    ] = MAX_COLOR_COMP * toRange(pixelColor.x(), 0, 0.999);
-            pixels[(y * width * COLOR_CHANNELS) + x * COLOR_CHANNELS + 1] = MAX_COLOR_COMP * toRange(pixelColor.y(), 0, 0.999);
-            pixels[(y * width * COLOR_CHANNELS) + x * COLOR_CHANNELS + 2] = MAX_COLOR_COMP * toRange(pixelColor.z(), 0, 0.999);
-        }
+        threads.push_back(thread(&Renderer::renderBuckets, this, scene, pixels, width));
     }
 
-    if (!stbi_write_jpg(fileName.c_str(), width, height, COLOR_CHANNELS, pixels, 90))
+    for (auto& th : threads)
     {
-        std::cerr << "\nCould not create image.\n";
-        delete[] pixels;
-        return;
+        th.join();
     }
+    threads.clear();
+
+    formatRender(fileName, width, height, pixels);
     delete[] pixels;
-    cout << fileName << " done.\n";
+
+    high_resolution_clock::time_point stop = high_resolution_clock::now();
+
+    microseconds duration = duration_cast<microseconds>(stop - start);
+    const double seconds = duration.count() / 1'000'000.0;
+    cout << "Execution time: " << seconds << "seconds.\n";
 }
 
-void Renderer::renderToPNG(const Scene& scene, const string& fileName)
+void Renderer::renderBuckets(const Scene& scene, unsigned char* pixels, int width)
 {
-    //Rendering
-    std::cout << "Rendering: " << fileName << '\n';
-
-    int width = scene.getWidth();
-    int height = scene.getHeight();
-
-    unsigned char* pixels = new unsigned char[width * height * COLOR_CHANNELS];
-
-    for (int y = 0; y < height; ++y)
+    while (!buckets.empty())
     {
-        cout << (int)(((float)y / height) * 100) << "%" << "\r";
-        for (int x = 0; x < width; ++x)
+        if (m.try_lock())
+        {
+            Bucket bucket = buckets.top();
+            buckets.pop();
+            m.unlock();
+            renderRegion(scene, pixels, bucket.colIdx, bucket.rowIdx, bucket.rHeight, bucket.rWidth, width);
+        }
+    }
+}
+
+void Renderer::renderRegion(const Scene& scene, unsigned char* pixels, int colIdx, int rowIdx, int rHeight, int rWidth, int width)
+{
+    for (int y = colIdx; y < rHeight; ++y)
+    {
+        for (int x = rowIdx; x < rWidth; ++x)
         {
             Color pixelColor(0, 0, 0);
 
@@ -103,15 +78,29 @@ void Renderer::renderToPNG(const Scene& scene, const string& fileName)
             pixels[(y * width * COLOR_CHANNELS) + x * COLOR_CHANNELS + 2] = MAX_COLOR_COMP * toRange(pixelColor.z(), 0, 0.999);
         }
     }
+}
 
-    if (!stbi_write_png(fileName.c_str(), width, height, COLOR_CHANNELS, pixels, 0))
+stack<Bucket> Renderer::generateBuckets(int bucketSize, int width, int height)
+{
+    stack<Bucket> buckets;
+    for (int colIdx = 0; colIdx < height; colIdx += bucketSize)
     {
-        std::cerr << "\nCould not create image.\n";
-        delete[] pixels;
-        return;
+        for (int rowIdx = 0; rowIdx < width; rowIdx += bucketSize)
+        {
+            int rHeight = colIdx + bucketSize;
+            int rWidth = rowIdx + bucketSize;
+            if (rHeight > height)
+            {
+                rHeight = height;
+            }
+            if (rWidth > width)
+            {
+                rWidth = width;
+            }
+            buckets.push({ colIdx, rowIdx, rHeight, rWidth });
+        }
     }
-    delete[] pixels;
-    cout << fileName << " done.\n";
+    return buckets;
 }
 
 Color Renderer::colorAtPixel(int x, int y, const Scene& scene) const

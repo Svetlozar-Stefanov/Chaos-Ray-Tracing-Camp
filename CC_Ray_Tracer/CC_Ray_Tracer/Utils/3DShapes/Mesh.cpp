@@ -2,6 +2,11 @@
 
 bool Mesh::intersects(const Ray& r, Intersection& intersection) const
 {
+	if (!mBBox.intersects(r))
+	{
+		return false;
+	}
+
 	bool hit = false;
 	for (int i = 0; i < mIndices.size(); ++i)
 	{

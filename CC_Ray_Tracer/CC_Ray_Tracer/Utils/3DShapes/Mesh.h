@@ -7,6 +7,57 @@
 
 using std::vector;
 
+struct BoundingBox
+{
+public:
+	Vector3 max;
+	Vector3 min;
+
+	bool intersects(const Ray& ray) const
+	{
+		bool hit = false;
+		for (int side = 0; side < 3; side++)
+		{
+			double t = (min[side] - ray.getOrigin()[side]) / ray.getDirection()[side];
+			if (t <= 0)
+			{
+				continue;
+			}
+
+			Vector3 p = ray.getPoint(t);
+			if ((p.x() > min.x() || areEqual(p.x(),min.x(), EPS))
+				&& (p.x() < max.x() || areEqual(p.x(), max.x(), EPS))
+				&& (p.y() > min.y() || areEqual(p.y(), min.y(), EPS))
+				&& (p.y() < max.y() || areEqual(p.y(), max.y(), EPS))
+				&& (p.z() > min.z() || areEqual(p.z(), min.z(), EPS))
+				&& (p.z() < max.z() || areEqual(p.z(), max.z(), EPS)))
+			{
+				hit = true;
+			}
+		}
+		for (int side = 0; side < 3; side++)
+		{
+			double t = (max[side] - ray.getOrigin()[side]) / ray.getDirection()[side];
+			if (t <= 0)
+			{
+				continue;
+			}
+
+			Vector3 p = ray.getPoint(t);
+			if ((p.x() > min.x() || areEqual(p.x(), min.x(), EPS))
+				&& (p.x() < max.x() || areEqual(p.x(), max.x(), EPS))
+				&& (p.y() > min.y() || areEqual(p.y(), min.y(), EPS))
+				&& (p.y() < max.y() || areEqual(p.y(), max.y(), EPS))
+				&& (p.z() > min.z() || areEqual(p.z(), min.z(), EPS))
+				&& (p.z() < max.z() || areEqual(p.z(), max.z(), EPS)))
+			{
+				hit = true;
+			}
+		}
+		return hit;
+	}
+};
+
 struct TriangleIndices
 {
 	TriangleIndices(int index0, int index1, int index2)
@@ -29,6 +80,7 @@ public:
 		mVertices = vertices;
 		mIndices = indices;
 		mMaterialIdx = materialIdx;
+		initializeBBox();
 
 		mVertNormals = vector<Vector3>(mVertices.size());
 		genVertNormals();
@@ -46,9 +98,11 @@ private:
 	vector<TriangleIndices> mIndices;
 	int mMaterialIdx;
 
+	BoundingBox mBBox;
+
 	void genVertNormals()
 	{
-		for(const TriangleIndices& idc : mIndices)
+		for (const TriangleIndices& idc : mIndices)
 		{
 			Vector3 normal = calcPlaneNormal(mVertices[idc.i0], mVertices[idc.i1], mVertices[idc.i2]);
 			mVertNormals[idc.i0] += normal;
@@ -60,5 +114,47 @@ private:
 		{
 			normalize(mVertNormals[i]);
 		}
+	}
+
+	void initializeBBox()
+	{
+		float minX = INT_MAX;
+		float minY = INT_MAX;
+		float minZ = INT_MAX;
+
+		float maxX = INT_MIN;
+		float maxY = INT_MIN;
+		float maxZ = INT_MIN;
+
+		for (auto& vert : mVertices)
+		{
+			if (minX > vert.x())
+			{
+				minX = vert.x();
+			}
+			if (minY > vert.y())
+			{
+				minY = vert.y();
+			}
+			if (minZ > vert.z())
+			{
+				minZ = vert.z();
+			}
+
+			if (maxX < vert.x())
+			{
+				maxX = vert.x();
+			}
+			if (maxY < vert.y())
+			{
+				maxY = vert.y();
+			}
+			if (maxZ < vert.z())
+			{
+				maxZ = vert.z();
+			}
+		}
+		mBBox.max = Vector3(maxX, maxY, maxZ);
+		mBBox.min = Vector3(minX, minY, minZ);
 	}
 };
