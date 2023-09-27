@@ -179,7 +179,8 @@ Document Scene::getJsonDocument(const string& fileName)
 
 bool Scene::intersects(const Ray& ray, Intersection& intersection) const
 {
-	float currentT = intersection.getT();
+	return accelerator.intersects(ray, intersection);
+	/*float currentT = intersection.getT();
 	float boxT = INT_MAX;
 	bool hit = false;
 	for (const Mesh& mesh : mObjects)
@@ -200,7 +201,7 @@ bool Scene::intersects(const Ray& ray, Intersection& intersection) const
 			}
 		}
 	}
-	return hit;
+	return hit;*/
 }
 
 Vector3 Scene::loadVector(const Value::ConstArray& arr)

@@ -10,7 +10,7 @@ const int MAX_COLOR_COMP = 256;
 const int COLOR_CHANNELS = 3;
 const float SHADOW_BIAS = 0.1f;
 const float REFRACTION_BIAS = 0.001f;
-const float MAX_DEPTH = 5;
+const float MAX_DEPTH = 30;
 const int BUCKET_SIZE = 100;
 
 using std::string;

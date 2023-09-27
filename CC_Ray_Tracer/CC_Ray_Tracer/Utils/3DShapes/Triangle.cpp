@@ -12,6 +12,12 @@ Vector3 calcPlaneNormal(Vector3 v0, Vector3 v1, Vector3 v2)
 
 bool Triangle::intersects(const Ray& r, Intersection& intersection) const
 {
+	if (r.getType() == RayType::Shadow
+		&& mMaterial->getType() == MaterialType::Refractive)
+	{
+		return false;
+	}
+
 	Vector3 planeNormal = getNormal();
 	float rProj = dot(planeNormal, r.getDirection());
 
@@ -34,7 +40,7 @@ bool Triangle::intersects(const Ray& r, Intersection& intersection) const
 	{
 		return false;
 	}
-	
+
 	float t = rpDist / rProj;
 
 	//Triangle is behind current colosest
@@ -62,7 +68,7 @@ bool Triangle::intersects(const Ray& r, Intersection& intersection) const
 
 		Vector3 intersectionNormal = normals[1] * u + normals[2] * v + normals[0] * w;
 		normalize(intersectionNormal);
-		intersection.update(t, planeNormal, intersectionNormal);
+		intersection.update(t, mMaterial, planeNormal, intersectionNormal);
 
 		return true;
 	}

@@ -19,8 +19,8 @@ int main()
 	//renderer.render(scene2, "Pictures/HW11/scene2.png");
 	//renderer.render(scene3, "Pictures/HW11/scene3.png");
 	//renderer.render(scene4, "Pictures/HW11/scene4.png");
-	renderer.render(scene5, "Pictures/HW11/scene5.png");
+	//renderer.render(scene5, "Pictures/HW11/scene5.png");
 	//renderer.render(scene6, "Pictures/HW11/scene6.png");
 	//renderer.render(scene7, "Pictures/HW11/scene7.png");
-	//renderer.render(scene8, "Pictures/HW11/scene8.png");
+	renderer.render(scene8, "Pictures/HW11/scene8.png");
 }

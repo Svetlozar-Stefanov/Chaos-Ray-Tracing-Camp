@@ -39,6 +39,8 @@ void Renderer::render(const Scene& scene, const std::string& fileName)
     }
     threads.clear();
 
+    //renderRegion(scene, pixels, 0, 0, height, width, width);
+
     formatRender(fileName, width, height, pixels);
     delete[] pixels;
 

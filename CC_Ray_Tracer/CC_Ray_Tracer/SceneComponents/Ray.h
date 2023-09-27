@@ -62,6 +62,7 @@ public:
 		mT = t;
 		mMaterial = material;
 		mNormal = normal;
+		mIntersectionNormal = intersectionNormal;
 	}
 
 	void update(float t, Vector3 normal, Vector3 intersectionNormal)
